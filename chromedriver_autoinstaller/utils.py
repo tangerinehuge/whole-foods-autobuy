@@ -15,7 +15,6 @@ import re
 import PySimpleGUI as sg
 from io import BytesIO
 
-
 __author__ = 'Yeongbin Jo <iam.yeongbin.jo@gmail.com>'
 
 
@@ -155,8 +154,9 @@ def display_download_window():
 
     layout = [[sg.Text('Downloading Chromedriver Binary...')]]
 
-    window = sg.Window('Download In Progress', layout, font=('Arial', 14), keep_on_top=True,)
-    event, values = window.read(timeout=0)
+    window = sg.Window('Download In Progress', layout, font=('Arial', 14), keep_on_top=True)
+    # event, values = window.read(timeout=0)
+    window(timeout=0)
 
     return window
 
@@ -183,26 +183,25 @@ def download_chromedriver(cwd=False):
         return
     major_version = get_major_version(chromedriver_version)
 
-    if cwd:
-        chromedriver_dir = os.path.join(
-            os.path.abspath(os.getcwd()),
-            major_version
-        )
-    else:
-        chromedriver_dir = os.path.join(
-            os.path.abspath(os.path.dirname(__file__)),
-            major_version
-        )
+    # if cwd:
+    #     chromedriver_dir = os.path.join(
+    #         os.path.abspath(os.getcwd()),
+    #         major_version
+    #     )
+    # else:
+    #     chromedriver_dir = os.path.join(
+    #         os.path.abspath(os.path.dirname(__file__)),
+    #         major_version
+    #     )
     chromedriver_filename = get_chromedriver_filename()
-    if chromedriver_filename == 'chromedriver':
-        chromedriver_dir = '/usr/local/bin/'
+    chromedriver_dir = os.path.join(os.path.expanduser("~"), 'chromedriver', major_version)
     chromedriver_filepath = os.path.join(chromedriver_dir, chromedriver_filename)
     if not os.path.isfile(chromedriver_filepath) or \
             not check_version(chromedriver_filepath, chromedriver_version):
         window = display_download_window()
         logging.debug(f'Downloading chromedriver ({chromedriver_version})...')
         if not os.path.isdir(chromedriver_dir):
-            os.mkdir(chromedriver_dir)
+            os.makedirs(chromedriver_dir)
         url = get_chromedriver_url(version=chromedriver_version)
         try:
             response = urllib.request.urlopen(url)

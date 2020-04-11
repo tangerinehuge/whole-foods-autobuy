@@ -107,8 +107,8 @@ def send_ifttt(webhook):
 def send_sms(account_sid, auth_token, twilio_number, cell_number):
     client = Client(account_sid, auth_token)
 
-    message = client.messages \
-                    .create(
+    # message = client.messages \
+    client.messages.create(
                         body="Whole Foods order has been placed!",
                         from_=twilio_number,
                         to=cell_number
@@ -188,7 +188,7 @@ def getWFSlot(productUrl, config):
                         ))
                     driver.execute_script("arguments[0].scrollIntoView(true);", slot_button)
                     slot_button.click()
-                except Exception as ex:
+                except Exception:
                     # print("slot button not clickable")
                     # print(repr(ex))
                     continue
@@ -225,7 +225,7 @@ def getWFSlot(productUrl, config):
                         ))
                     driver.execute_script("arguments[0].scrollIntoView(true);", top_continue_button)
                     top_continue_button.click()
-                except Exception as ex:
+                except Exception:
                     # print(repr(ex))
                     pass
             else:

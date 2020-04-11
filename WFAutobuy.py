@@ -4,9 +4,8 @@ import os
 import requests
 import json
 import socket
-# import chromedriver_binary
-import chromedriver_autoinstaller
 import PySimpleGUI as sg
+import chromedriver_autoinstaller
 
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options

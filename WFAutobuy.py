@@ -5,7 +5,8 @@ import requests
 import json
 import socket
 import PySimpleGUI as sg
-import chromedriver_autoinstaller
+# import chromedriver_autoinstaller
+from webdriver_manager.chrome import ChromeDriverManager
 
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -16,9 +17,6 @@ from twilio.rest import Client
 
 CONFIG_FILE = '/tmp/config.json'
 DEFAULT_CONFIG = {"interval": 30, "purchasing_enabled": True, "ifttt_enabled": False, "ifttt_webhook": "", "slack_enabled": False, "slack_webhook": "", "twilio_enabled": False, "twilio_account_sid": "", "twilio_auth_token": "", "twilio_phone_number": "", "twilio_cell_number": ""}
-
-# install chromedriver if it's not already installed
-chromedriver_autoinstaller.install()
 
 def load_config(config_file, default_config):
     try:
@@ -286,6 +284,9 @@ def getWFSlot(productUrl, config):
             pass     
 
 if __name__ == "__main__":
+    # install chromedriver if it's not already installed
+    webdriver.Chrome(ChromeDriverManager().install())
+
     config_values = display_config_window()
     getWFSlot('https://www.amazon.com/gp/buy/shipoptionselect/handlers/display.html?hasWorkingJavascript=1', config_values)
 

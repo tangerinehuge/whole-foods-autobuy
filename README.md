@@ -26,4 +26,6 @@ The fastest way to run this script is to download the precompiled binary. It sho
 
 The script will take over at this point, auto-refreshing at whatever interval you selected. It will select the first open spot when one becomes available and proceed with the purchase.
 
-The first time you run the program it will launch with the default settings enabled. Any changes to the settings will be saved between sessions.  
+The first time you run the program it will launch with the default settings enabled. Any changes to the settings will be saved between sessions.
+
+![Config Screenshot](/images/config.png?raw=true "Configuration Window")

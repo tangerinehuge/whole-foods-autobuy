@@ -12,7 +12,7 @@ The fastest way to run this script is to download the precompiled binary. It sho
 
 **Clone Repo:**
 1. Clone the repository to a local directory.
-2. Install the necessary modules: `pip install -r requirements.txt`
+2. Install the necessary modules: `pip3 install -r requirements.txt`
 3. Run the script: `python3 WFAutobuy.py`
 
 ## Usage

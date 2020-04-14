@@ -6,7 +6,7 @@ This is a Python script/app that searches for the first available Amazon Whole F
 The fastest way to run this script is to download the precompiled binary. It should run on any Mac with Chrome installed. Alternatively, you can clone the repo and run the script manually.
 
 **Self-contained Binary:** 
-1. Download *WFAutobuy* from the mac-binary folder
+1. Download [*WFAutobuy*](https://github.com/tangerinehuge/whole-foods-autobuy/raw/master/mac%20binary/WFAutobuy) from the mac-binary folder
 2. Make sure it's executable.
 3. You'll probably need to right click it and click "Open" the first time you run it in order to bypass Gatekeeper. At that point it will download  chromedriver, if necessary, then display the configuration window.
 

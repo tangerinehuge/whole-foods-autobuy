@@ -5,7 +5,6 @@ import requests
 import json
 import socket
 import PySimpleGUI as sg
-# import chromedriver_autoinstaller
 from webdriver_manager.chrome import ChromeDriverManager
 
 from selenium import webdriver
@@ -13,6 +12,7 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import WebDriverException
 from twilio.rest import Client
 
 CONFIG_FILE = '/tmp/config.json'
@@ -68,7 +68,7 @@ def display_config_window():
         ]
 
     # draw window
-    window = sg.Window('Amazon Whole Foods Autoshopper', layout, font=("Arial", 14), keep_on_top=True)
+    window = sg.Window('Amazon Whole Foods Autobuy', layout, font=("Arial", 14), keep_on_top=True)
 
     # process input into config window
     while True:  # Event Loop
@@ -142,7 +142,10 @@ def show_message_box():
     alert_window.close()
 
 
-def getWFSlot(productUrl, config):
+def init_webdriver():
+    # check for chromedriver and install if not present
+    # webdriver.Chrome(ChromeDriverManager().install())
+
     # create webdriver object
     chrome_options = Options()
     
@@ -153,14 +156,20 @@ def getWFSlot(productUrl, config):
     location = ("127.0.0.1", 9222)
     result_of_check = a_socket.connect_ex(location)
 
-    if result_of_check == 0:
-        chrome_options.add_experimental_option("debuggerAddress", "127.0.0.1:9222")
-
     # close socket object
     a_socket.close()
+
+    if result_of_check == 0:
+        chrome_options.add_experimental_option("debuggerAddress", "127.0.0.1:9222")
+    
+    chromedriver_path = ChromeDriverManager().install()
     
     # config webdriver and fetch product URL
-    driver = webdriver.Chrome(options=chrome_options)
+    driver = webdriver.Chrome(executable_path=chromedriver_path, options=chrome_options)
+    
+    return driver
+
+def getWFSlot(driver, productUrl, config):
     driver.get(productUrl)
     # driver.implicitly_wait(3)
 
@@ -269,11 +278,6 @@ def getWFSlot(productUrl, config):
                     continue # retry loop if button doesn't appear for some reason
                 except:
                     # if error, sleep for an hour in case the session can be manually recovered
-                    # print("The following exception occured, cannot place order.")
-                    # print(sys.exc_info()[0])
-                    # print(sys.exc_info()[1])
-                    # print(sys.exc_info()[2].tb_lineno)
-                        
                     time.sleep(3600)     
             
         except:
@@ -284,9 +288,9 @@ def getWFSlot(productUrl, config):
             pass     
 
 if __name__ == "__main__":
-    # install chromedriver if it's not already installed
-    webdriver.Chrome(ChromeDriverManager().install())
-
-    config_values = display_config_window()
-    getWFSlot('https://www.amazon.com/gp/buy/shipoptionselect/handlers/display.html?hasWorkingJavascript=1', config_values)
-
+    try:
+        config_values = display_config_window()
+        driver = init_webdriver()
+        getWFSlot(driver, 'https://www.amazon.com/gp/buy/shipoptionselect/handlers/display.html?hasWorkingJavascript=1', config_values)
+    except WebDriverException:
+        driver.quit()

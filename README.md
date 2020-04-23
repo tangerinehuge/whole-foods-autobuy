@@ -3,12 +3,17 @@
 This is a Python script/app that searches for the first available Amazon Whole Foods delivery slot and, optionally, places your order.
 
 ## Installation
-The fastest way to run this script is to download the precompiled binary. It should run on any Mac with Chrome installed. Alternatively, you can clone the repo and run the script manually.
+The fastest way to run this script is to download the precompiled binary. It should run on Mac or Windows with Chrome installed. Alternatively, you can clone the repo and run the script manually.
 
-**Self-contained Binary:** 
+**Self-contained Binary (Mac):** 
 1. Download the latest [*WFAutobuy.dmg*](https://github.com/tangerinehuge/whole-foods-autobuy/releases/latest/download/WFAutobuy.dmg) from releases
 2. Open the DMG file and drag WFAutobuy into the Applications folder.
 3. Open the applications folder and run the program. You'll probably need to right click it and click "Open" the first time you run it in order to bypass Gatekeeper.
+
+**Self-contained Binary (Windows):** 
+1. Download the latest [*WFAutobuy.exe*](https://github.com/tangerinehuge/whole-foods-autobuy/releases/latest/download/WFAutobuy.exe) from releases
+2. Run the EXE file (you may need to click "More info" and then "Run anyway" to bypass Microsoft Defender
+
 
 **Clone Repo:**
 1. Clone the repository to a local directory.

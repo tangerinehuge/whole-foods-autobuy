@@ -1,6 +1,8 @@
 import sys
 import time
 import os
+from pathlib import Path
+import platform
 import requests
 import json
 import socket
@@ -15,7 +17,11 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import WebDriverException
 from twilio.rest import Client
 
-CONFIG_FILE = '/tmp/config.json'
+if platform.system == 'Linux':
+    CONFIG_FILE = '/tmp/config.json'
+else:
+    CONFIG_FILE = Path(Path.home() / "Documents/config.json")
+
 DEFAULT_CONFIG = {"interval": 30, "purchasing_enabled": True, "ifttt_enabled": False, "ifttt_webhook": "", "slack_enabled": False, "slack_webhook": "", "twilio_enabled": False, "twilio_account_sid": "", "twilio_auth_token": "", "twilio_phone_number": "", "twilio_cell_number": ""}
 
 def load_config(config_file, default_config):

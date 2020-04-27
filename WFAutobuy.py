@@ -18,10 +18,10 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import WebDriverException
 from twilio.rest import Client
 
-# if platform.system == 'Linux':
-#     CONFIG_FILE = '/tmp/config.json'
-# else:
-CONFIG_FILE = Path(Path.home() / "Documents/config.json")
+if platform.system == 'Linux':
+    CONFIG_FILE = Path(Path.home() / "config.json")
+else:
+    CONFIG_FILE = Path(Path.home() / "Documents/config.json")
 
 DEFAULT_CONFIG = {"interval": 30, "purchasing_enabled": True, 
     "today_enabled": True, "tomorrow_enabled": True, "ifttt_enabled": False,

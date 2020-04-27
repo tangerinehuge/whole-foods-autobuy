@@ -7,8 +7,9 @@ import requests
 import json
 import socket
 import PySimpleGUI as sg
-from webdriver_manager.chrome import ChromeDriverManager
+import datetime
 
+from webdriver_manager.chrome import ChromeDriverManager
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
@@ -17,19 +18,22 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import WebDriverException
 from twilio.rest import Client
 
-if platform.system == 'Linux':
-    CONFIG_FILE = '/tmp/config.json'
-else:
-    CONFIG_FILE = Path(Path.home() / "Documents/config.json")
+# if platform.system == 'Linux':
+#     CONFIG_FILE = '/tmp/config.json'
+# else:
+CONFIG_FILE = Path(Path.home() / "Documents/config.json")
 
-DEFAULT_CONFIG = {"interval": 30, "purchasing_enabled": True, "ifttt_enabled": False, "ifttt_webhook": "", "slack_enabled": False, "slack_webhook": "", "twilio_enabled": False, "twilio_account_sid": "", "twilio_auth_token": "", "twilio_phone_number": "", "twilio_cell_number": ""}
+DEFAULT_CONFIG = {"interval": 30, "purchasing_enabled": True, 
+    "today_enabled": True, "tomorrow_enabled": True, "ifttt_enabled": False,
+    "ifttt_webhook": "", "slack_enabled": False, "slack_webhook": "",
+    "twilio_enabled": False, "twilio_account_sid": "", "twilio_auth_token": "",
+    "twilio_phone_number": "", "twilio_cell_number": ""}
 
 def load_config(config_file, default_config):
     try:
         with open(config_file, 'r') as f:
             config = json.load(f)
     except Exception:
-        # print("Invalid config or config file not found. Creating new config.")
         config = default_config
         save_config(config_file, config)
     return config
@@ -46,35 +50,86 @@ def display_config_window():
     config = load_config(CONFIG_FILE, DEFAULT_CONFIG)
 
     # set columns for each setting
-    ifttt = [[sg.Text('IFTTT Webhook URL:'), sg.Input(default_text=config['ifttt_webhook'], key='ifttt_webhook')]]
-    slack = [[sg.Text('Slack Webhook URL:'), sg.Input(default_text=config['slack_webhook'], key='slack_webhook')]]
+    ifttt = [
+        [sg.Text('IFTTT Webhook URL:'),
+        sg.Input(default_text=config['ifttt_webhook'],
+        key='ifttt_webhook')]
+        ]
+    slack = [
+        [sg.Text('Slack Webhook URL:'),
+        sg.Input(default_text=config['slack_webhook'],
+        key='slack_webhook')]
+        ]
     twilio = [
-            [sg.Text('Twilio Account SID:'), sg.Input(default_text=config['twilio_account_sid'], key='twilio_account_sid')],
-            [sg.Text('Twilio Auth Token:'), sg.Input(default_text=config['twilio_auth_token'], key='twilio_auth_token')],
-            [sg.Text('Twilio Phone #:'), sg.Input(default_text=config['twilio_phone_number'], key='twilio_phone_number')],
-            [sg.Text('Your Phone #:'), sg.Input(default_text=config['twilio_cell_number'], key='twilio_cell_number')]
-            ]
+        [sg.Text('Twilio Account SID:'),
+        sg.Input(default_text=config['twilio_account_sid'],
+        key='twilio_account_sid')],
+        [sg.Text('Twilio Auth Token:'),
+        sg.Input(default_text=config['twilio_auth_token'],
+        key='twilio_auth_token')],
+        [sg.Text('Twilio Phone #:'),
+        sg.Input(default_text=config['twilio_phone_number'],
+        key='twilio_phone_number')],
+        [sg.Text('Your Phone #:'),
+        sg.Input(default_text=config['twilio_cell_number'],
+        key='twilio_cell_number')]
+        ]
 
     instructions = """INSTRUCTIONS:
 1. Select from the following options and click "Start" to begin.
 2. Amazon will open in a new Chrome window.
 3. Login to Amazon and add items to your cart if you haven't already.
-4. When you get to the delivery window selection page the script will start refreshing at the selected interval and place the order for the first available slot.
+4. When you get to the delivery window selection page the script will start\
+refreshing at the selected interval and place the order for the first\
+available slot.
 """
 
     layout = [
-        [sg.Text(instructions, size=(70,7))],
-        [sg.Text('Refresh interval in seconds:'), sg.Slider(range=(5,600), default_value=config['interval'] or 23, orientation='horizontal', size=(60,15), key='interval')],
-        [sg.Checkbox('Enable Purchasing (uncheck to stop at purchase screen)', 
-            default=config['purchasing_enabled'], key='purchasing_enabled')],
-        [sg.Checkbox('Enable IFTTT Notification', change_submits=True, default=config['ifttt_enabled'], key="ifttt_enabled"),sg.Column(ifttt, key='ifttt_opts', visible=config['ifttt_enabled'])],
-        [sg.Checkbox('Enable Slack Notification', change_submits=True, default=config['slack_enabled'], key="slack_enabled"),sg.Column(slack, key='slack_opts', visible=config['slack_enabled'])],
-        [sg.Checkbox('Enable Twilio SMS Notification', change_submits=True, default=config['twilio_enabled'], key="twilio_enabled"),sg.Column(twilio, key='twilio_opts', visible=config['twilio_enabled'])],
-        [sg.Submit('Start')]
+        [
+            sg.Text(instructions, size=(70,7))
+        ],
+        [
+            sg.Text('Refresh interval in seconds:'), sg.Slider(range=(5,600), 
+            default_value=config['interval'], orientation='horizontal',
+            size=(60,15), key='interval')
+        ],
+        [
+            sg.Checkbox('Enable Purchasing (uncheck to stop at purchase screen)', 
+            default=config['purchasing_enabled'], key='purchasing_enabled')
+        ],
+        [
+            sg.Text('Accept delivery windows:'), 
+            sg.Checkbox('Today', key="today_enabled",
+            default=config['today_enabled'], change_submits=True),
+            sg.Checkbox('Tomorrow', key="tomorrow_enabled",
+            default=config['tomorrow_enabled'], change_submits=True)
+        ],
+        [
+            sg.Checkbox('Enable IFTTT Notification', change_submits=True,
+            default=config['ifttt_enabled'], key="ifttt_enabled"),
+            sg.Column(ifttt, key='ifttt_opts', visible=config['ifttt_enabled'])
+        ],
+        [
+            sg.Checkbox('Enable Slack Notification', change_submits=True,
+            default=config['slack_enabled'], key="slack_enabled"),
+            sg.Column(slack, key='slack_opts', visible=config['slack_enabled'])
+            ],
+        [
+            sg.Checkbox('Enable Twilio SMS Notification', change_submits=True,
+            default=config['twilio_enabled'], key="twilio_enabled"),
+            sg.Column(twilio, key='twilio_opts', 
+            visible=config['twilio_enabled'])
+        ],
+        [
+            sg.Submit('Start', key="start_button"),
+            sg.Text("You must select at least one delivery day", 
+            text_color='red', key="warn_message", visible=False)
         ]
+    ]
 
     # draw window
-    window = sg.Window('Amazon Whole Foods Autobuy', layout, font=("Arial", 14), keep_on_top=True)
+    window = sg.Window('Amazon Whole Foods Autobuy', layout, 
+        font=("Arial", 14), keep_on_top=True)
 
     # process input into config window
     while True:  # Event Loop
@@ -82,7 +137,7 @@ def display_config_window():
         # # print(event, values)
         if event is None:
             sys.exit(0)
-        if event == 'Start':
+        if event == 'start_button':
             values['interval'] = int(values['interval'])
             save_config(CONFIG_FILE,values)
             break
@@ -98,6 +153,14 @@ def display_config_window():
             window.FindElement('twilio_opts').Update(visible=True)
         if values['twilio_enabled'] == False:
             window.FindElement('twilio_opts').Update(visible=False)
+        if (values['today_enabled'] == False and
+                values['tomorrow_enabled'] == False):
+            window.FindElement('start_button').Update(disabled=True)
+            window.FindElement('warn_message').Update(visible=True)
+        else:
+            window.FindElement('start_button').Update(disabled=False)
+            window.FindElement('warn_message').Update(visible=False)
+
 
     window.close()
 
@@ -166,7 +229,9 @@ def init_webdriver():
     a_socket.close()
 
     if result_of_check == 0:
-        chrome_options.add_experimental_option("debuggerAddress", "127.0.0.1:9222")
+        chrome_options.add_experimental_option(
+            "debuggerAddress",
+            "127.0.0.1:9222")
     
     chromedriver_path = ChromeDriverManager().install()
     
@@ -181,30 +246,56 @@ def getWFSlot(driver, productUrl, config):
 
     no_open_slots = True
 
-    alternate_url = "https://www.amazon.com/gp/buy/itemselect/handlers/display.html?ie=UTF8&useCase=singleAddress&hasWorkingJavascript=1"
+    alternate_url = "https://www.amazon.com/gp/buy/itemselect/handlers/display\
+        .html?ie=UTF8&useCase=singleAddress&hasWorkingJavascript=1"
 
     # loop while no open slots found
     while no_open_slots:
 
         # loop while URL is not on the delivery window page
         while driver.current_url not in [productUrl, alternate_url]:
-            # print(f"Not on delivery window page. Waiting 5 seconds to check again...")
             time.sleep(5)
-        
+
         try:
-            # time.sleep(1) # wait 1 second for page to fully load     
-            
+            # time.sleep(1) # wait 1 second for page to fully load  
+            today = datetime.datetime.now()
+            tomorrow = today + datetime.timedelta(days=1)  
+            todaystr = today.strftime("%Y%m%d")
+            tomorrowstr = tomorrow.strftime("%Y%m%d")
+
+            today_button = driver.find_element_by_name(todaystr)
+            tomorrow_button = driver.find_element_by_name(tomorrowstr)
+            day_enabled = True
+            # todaystr = "20200424" # remove in prod
+            # tomorrowstr = "20200425"
+            if (today_button.get_attribute("disabled") is not None and
+                    config['today_enabled'] and 
+                    not config['tomorrow_enabled']):
+                day_enabled = False
+            elif not config['today_enabled'] and config['tomorrow_enabled']:
+                if (tomorrow_button.get_attribute("disabled") is not None):
+                    day_enabled = False
+                elif today_button.get_attribute("disabled") is None:
+                    driver.execute_script("arguments[0].scrollIntoView(true);",
+                        tomorrow_button)
+                    tomorrow_button.click()
+
             # search for delivery slot buttons, select first one, then click continue
-            if driver.find_elements_by_xpath("//button[@class='a-button-text ufss-slot-toggle-native-button']"):
+            slot_xpath = "//button[@class='a-button-text ufss-slot-toggle-native-button']"
+            if driver.find_elements_by_xpath(slot_xpath) and day_enabled:
                 try:
-                    slot_button = WebDriverWait(driver, 10).until(EC.element_to_be_clickable(
-                        (By.XPATH, "//button[@class='a-button-text ufss-slot-toggle-native-button']")
-                        ))
+                    slot_button = WebDriverWait(driver, 10).until(
+                        EC.element_to_be_clickable((By.XPATH, slot_xpath))
+                        )
+                    # if slot_button.find_element_by_class_name("ufss-aok-offscreen").get_attribute("innerText") == "By 2:00 PM":
+                    #     print("Found button")
                     driver.execute_script("arguments[0].scrollIntoView(true);", slot_button)
                     slot_button.click()
-                except Exception:
-                    # print("slot button not clickable")
-                    # print(repr(ex))
+                    # else:
+                    #     continue
+                except Exception as ex:
+                    print("slot button not clickable")
+                    print(repr(ex))
                     continue
                 
                 try:
@@ -298,5 +389,6 @@ if __name__ == "__main__":
         config_values = display_config_window()
         driver = init_webdriver()
         getWFSlot(driver, 'https://www.amazon.com/gp/buy/shipoptionselect/handlers/display.html?hasWorkingJavascript=1', config_values)
+        # getWFSlot(driver, 'file:///Users/galen/Downloads/two%20days%20Reserve%20a%20Time%20Slot%20-%20Amazon.com%20Checkout.html', config_values)
     except WebDriverException:
         driver.quit()

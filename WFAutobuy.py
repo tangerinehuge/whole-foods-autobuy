@@ -287,12 +287,8 @@ def getWFSlot(driver, productUrl, config):
                     slot_button = WebDriverWait(driver, 10).until(
                         EC.element_to_be_clickable((By.XPATH, slot_xpath))
                         )
-                    # if slot_button.find_element_by_class_name("ufss-aok-offscreen").get_attribute("innerText") == "By 2:00 PM":
-                    #     print("Found button")
                     driver.execute_script("arguments[0].scrollIntoView(true);", slot_button)
                     slot_button.click()
-                    # else:
-                    #     continue
                 except Exception as ex:
                     print("slot button not clickable")
                     print(repr(ex))
